@@ -204,3 +204,51 @@ describe('preloader', () => {
     expect(immediateScript).not.toContain('route-3.js');
   });
 });
+
+describe('getStaticImports', () => {
+  it('lists the imports before the dynamic marker, even when a dynamic one has probability 1', async () => {
+    const { getStaticImports } = await import('./preload-impl');
+    const staticImports = getStaticImports(['a.js', 4, -10, 5, 'b.js', 'c.js']);
+    expect(staticImports?.get('a.js')).toEqual(['b.js']);
+    expect(staticImports?.get('b.js')).toEqual([]);
+  });
+
+  it('is undefined without a bundle graph', async () => {
+    const { getStaticImports } = await import('./preload-impl');
+    expect(getStaticImports(undefined)).toBeUndefined();
+  });
+});
+
+describe('getHandlerModulePreloads', () => {
+  // handler.js and run.js both import core.js, which imports qrl.js; run.js also imports lazy.js dynamically
+  const graph = ['handler.js', 6, 'run.js', 6, -5, 9, 'core.js', 8, 'qrl.js', 'lazy.js'];
+
+  it("lists the static imports of the handlers' bundles, not the bundles qwikloader imports itself", async () => {
+    const { getHandlerModulePreloads, getStaticImports } = await import('./preload-impl');
+    const preloads = getHandlerModulePreloads(
+      ['handler.js', 'run.js'],
+      getStaticImports(graph),
+      new Set()
+    );
+    expect(preloads).toEqual(['core.js', 'qrl.js']);
+  });
+
+  it("also lists core's own handler bundles, which any page with handlers runs", async () => {
+    const { getHandlerModulePreloads, getStaticImports } = await import('./preload-impl');
+    const preloads = getHandlerModulePreloads(
+      ['handler.js', 'run.js'],
+      getStaticImports(graph),
+      new Set(),
+      ['run.js']
+    );
+    expect(preloads).toEqual(['run.js', 'core.js', 'qrl.js']);
+  });
+
+  it('skips the bundles an earlier handler already preloaded', async () => {
+    const { getHandlerModulePreloads, getStaticImports } = await import('./preload-impl');
+    const linked = new Set<string>();
+    getHandlerModulePreloads(['handler.js'], getStaticImports(graph), linked);
+    expect(getHandlerModulePreloads(['run.js'], getStaticImports(graph), linked)).toEqual([]);
+    expect([...linked]).toEqual(['core.js', 'qrl.js']);
+  });
+});

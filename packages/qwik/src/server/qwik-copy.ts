@@ -12,6 +12,7 @@ export {
   mapArray_has,
 } from '../core/client/util-mapArray';
 export { QError, qError } from '../core/shared/error/error';
+export { readsOwnCaptures } from '../core/shared/qrl/handler-qrls';
 export { SYNC_QRL } from '../core/shared/qrl/qrl-utils';
 export { DEBUG_TYPE, QContainerValue, VirtualType, EffectProperty } from '../core/shared/types';
 export {

@@ -3,7 +3,7 @@ import { initPreloader, qTest } from './qwik-copy';
 import type { QRLInternal, SSRContainer } from './qwik-types';
 import type { PreloaderOptions, RenderOptions, RenderToStreamOptions } from './types';
 
-const simplifyPath = (base: string, path: string | null | undefined) => {
+export const simplifyPath = (base: string, path: string | null | undefined) => {
   if (path == null) {
     return null;
   }
@@ -189,6 +189,70 @@ function normalizePreLoaderOptions(
 ): Required<PreloaderOptions> {
   return { ...preLoaderOptionsDefault, ...input };
 }
+
+const staticImportsByGraph = new WeakMap<(string | number)[], Map<string, string[]>>();
+
+/**
+ * Each bundle's static imports, which a modulepreload does not fetch. They are the deps before the
+ * first negative probability marker, since a likely dynamic import can also parse as probability
+ * 1.
+ */
+export const getStaticImports = (bundleGraph: (string | number)[] | undefined) => {
+  if (!bundleGraph) {
+    return undefined;
+  }
+  let staticImports = staticImportsByGraph.get(bundleGraph);
+  if (staticImports) {
+    return staticImports;
+  }
+  staticImports = new Map();
+  let i = 0;
+  while (i < bundleGraph.length) {
+    const name = bundleGraph[i++] as string;
+    const imports: string[] = [];
+    let isStatic = true;
+    while (typeof bundleGraph[i] === 'number') {
+      const index = bundleGraph[i++] as number;
+      if (index < 0) {
+        isStatic = false;
+      } else if (isStatic) {
+        imports.push(bundleGraph[index] as string);
+      }
+    }
+    staticImports.set(name, imports);
+  }
+  staticImportsByGraph.set(bundleGraph, staticImports);
+  return staticImports;
+};
+
+/**
+ * What SSR modulepreloads for event handlers: their bundles' static imports, transitively, which
+ * would otherwise cost a click a second round trip. qwikloader imports the bundles themselves at
+ * the event, except core's own handler bundles (`_run` and the like), which any page with handlers
+ * runs. `linked` holds the bundles already preloaded on this page and gains the new ones.
+ */
+export const getHandlerModulePreloads = (
+  handlerBundles: string[],
+  staticImports: Map<string, string[]> | undefined,
+  linked: Set<string>,
+  coreHandlerBundles: string[] = []
+) => {
+  const preloads: string[] = [];
+  const pending = [
+    ...coreHandlerBundles,
+    ...handlerBundles.flatMap((bundle) => staticImports?.get(bundle) ?? []),
+  ];
+  for (let i = 0; i < pending.length; i++) {
+    const bundle = pending[i];
+    if (linked.has(bundle)) {
+      continue;
+    }
+    linked.add(bundle);
+    preloads.push(bundle);
+    pending.push(...(staticImports?.get(bundle) ?? []));
+  }
+  return preloads;
+};
 
 export const getBundles = (qrls: QRLInternal[]) => {
   const platform = getPlatform();
