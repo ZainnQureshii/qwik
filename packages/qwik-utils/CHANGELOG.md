@@ -1,5 +1,12 @@
 # @qwik.dev/utils
 
+## 2.0.0-rc.6
+
+### Patch Changes
+
+- Updated dependencies [[`062a66c`](https://github.com/QwikDev/qwik/commit/062a66c1931f9af30dcbeb435882c95572b17641), [`1056db6`](https://github.com/QwikDev/qwik/commit/1056db61c9b5082350b459031b55db9994a592eb), [`ef4a6ea`](https://github.com/QwikDev/qwik/commit/ef4a6ea08d8211d647f5c8777719ec9ed3235ad0), [`3f0d60e`](https://github.com/QwikDev/qwik/commit/3f0d60e152ca1dbd85a5affb32246972bbe8f9b5), [`c21344f`](https://github.com/QwikDev/qwik/commit/c21344f7fb6fd3462239d77154cf28a55b2aeb6f), [`f1c2e69`](https://github.com/QwikDev/qwik/commit/f1c2e69a668fac97e18e35fdc41658c3d8ee32bd), [`822f10f`](https://github.com/QwikDev/qwik/commit/822f10fb2e5329cffe2031a178474829cf5ecfb4), [`d23b8ea`](https://github.com/QwikDev/qwik/commit/d23b8eadf4bd343e4818d8f53c4f8fb20cbc6787), [`e604399`](https://github.com/QwikDev/qwik/commit/e60439920cb372993b9a03c95b6efdb8dcd2443a), [`9ec8a0b`](https://github.com/QwikDev/qwik/commit/9ec8a0bb061a45c12e0abf9dc48451e62f7ba5ae), [`4745a02`](https://github.com/QwikDev/qwik/commit/4745a02457dd9a04908cebd7ab6a372c97813c2c), [`124a8e5`](https://github.com/QwikDev/qwik/commit/124a8e5edda3ae5a99b8d0ee3870613cfc4021a5), [`9f76abb`](https://github.com/QwikDev/qwik/commit/9f76abb16be76242fdf8227643559d1f91a9be38), [`ffa2938`](https://github.com/QwikDev/qwik/commit/ffa293805f122b229d657be45f65013e78ed25a2), [`2544b4d`](https://github.com/QwikDev/qwik/commit/2544b4d1c9c8b06464a6f32cf83033619b72e87a), [`37e227f`](https://github.com/QwikDev/qwik/commit/37e227ff09392bec46c2854d84a8e0adae0d4c4e), [`45ffe5e`](https://github.com/QwikDev/qwik/commit/45ffe5ec0bc6bf6c1b4fcd034fec5890f823c377), [`fd5985f`](https://github.com/QwikDev/qwik/commit/fd5985f275c295f822dd33993a64f0e04fb09a3a), [`fba5470`](https://github.com/QwikDev/qwik/commit/fba5470df18d5b2284f6db2e2fa314fcbb7d21e5), [`b3d87c2`](https://github.com/QwikDev/qwik/commit/b3d87c2351d5e8cffe91274af62bdc25e5074cb8)]:
+  - @qwik.dev/core@2.0.0-rc.6
+
 ## 2.0.0-rc.5
 
 ### Patch Changes

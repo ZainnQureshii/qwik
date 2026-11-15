@@ -1,5 +1,52 @@
 # @qwik.dev/core
 
+## 2.0.0-rc.6
+
+### Patch Changes
+
+- 🐞🩹 vite plugin failing to load vite in strict package layouts (by [@xh123637](https://github.com/xh123637) in [#9489](https://github.com/QwikDev/qwik/pull/9489))
+
+- 🐞🩹 every dynamic import was treated as slow to download when ranking preloads (by [@wmertens](https://github.com/wmertens) in [#9495](https://github.com/QwikDev/qwik/pull/9495))
+
+- 🐞🩹 bundle totals counted shared imports once per import path (by [@wmertens](https://github.com/wmertens) in [#9495](https://github.com/QwikDev/qwik/pull/9495))
+
+- 🐞🩹 async computeds read inside a streamed `<Pending>` no longer get aborted during SSR (by [@wmertens](https://github.com/wmertens) in [#9499](https://github.com/QwikDev/qwik/pull/9499))
+
+- 🐞🩹 needed preloads go out before speculative ones after an early click (by [@maiieul](https://github.com/maiieul) in [#9479](https://github.com/QwikDev/qwik/pull/9479))
+
+- 🐞🩹 a computed object key in a reactive prop no longer throws a ReferenceError (by [@maiieul](https://github.com/maiieul) in [#9487](https://github.com/QwikDev/qwik/pull/9487))
+
+- 🐞🩹 a signal read through a non-null assertion or cast no longer throws a ReferenceError (by [@maiieul](https://github.com/maiieul) in [#9487](https://github.com/QwikDev/qwik/pull/9487))
+
+- 🐞🩹 an event handler's code starts loading at the event, without waiting for core or the streamed state (by [@wmertens](https://github.com/wmertens) in [#9496](https://github.com/QwikDev/qwik/pull/9496))
+
+- 🐞🩹 show completed updates without waiting for unrelated component code (by [@Varixo](https://github.com/Varixo) in [#9475](https://github.com/QwikDev/qwik/pull/9475))
+
+- 🐞🩹 keep the scoped style class on elements rendered by inline components (for example `<Resource>`) when they render or re-render on the client (by [@tzdesign](https://github.com/tzdesign) in [#9483](https://github.com/QwikDev/qwik/pull/9483))
+
+- 🐞🩹 needed chunks were preloaded at low priority after a lower preload hint (by [@maiieul](https://github.com/maiieul) in [#9410](https://github.com/QwikDev/qwik/pull/9410))
+
+- 🐞🩹 `/* @__PURE__ */` annotations no longer make the Vite plugin probe Qwik libraries for decorators (by [@wmertens](https://github.com/wmertens) in [#9494](https://github.com/QwikDev/qwik/pull/9494))
+
+- 🐞🩹 the server manifest now includes the bundle graph it declares (by [@wmertens](https://github.com/wmertens) in [#9490](https://github.com/QwikDev/qwik/pull/9490))
+
+- 🐞🩹 the optimizer now emits `_jsxSplit` for dynamic JSX tags with `on*$` props (including shorthand `{ onClick$ }`, lowercase `onclick$` and computed keys), so event listeners are registered when the tag is a string at runtime. `passive:*` directives on such tags are kept too. A computed string event key like `['onClick$']` in `jsx()` props is now handled like `onClick$`. (by [@fixfon](https://github.com/fixfon) in [#9356](https://github.com/QwikDev/qwik/pull/9356))
+
+- 🐞🩹 reduce preloader size and unused graph initialization work (by [@maiieul](https://github.com/maiieul) in [#9479](https://github.com/QwikDev/qwik/pull/9479))
+
+- 🐞🩹 the TS optimizer no longer hoists store reads that call an import into `_fnSignal` (by [@wmertens](https://github.com/wmertens) in [#9494](https://github.com/QwikDev/qwik/pull/9494))
+
+- 🐞🩹 the TS optimizer keeps object keys inside computed keys of hoisted `_fnSignal` (by [@wmertens](https://github.com/wmertens) in [#9494](https://github.com/QwikDev/qwik/pull/9494))
+
+- 🐞🩹 the TS optimizer no longer breaks a Qwik library's re-exported `isServer` or helper-named bindings (by [@wmertens](https://github.com/wmertens) in [#9494](https://github.com/QwikDev/qwik/pull/9494))
+
+- 🐞🩹 the TS optimizer no longer breaks modules that declare several constants in one statement (by [@wmertens](https://github.com/wmertens) in [#9494](https://github.com/QwikDev/qwik/pull/9494))
+
+- 🐞🩹 the TS optimizer tracks signals read through `!`, `as` and `satisfies` in JSX (by [@wmertens](https://github.com/wmertens) in [#9494](https://github.com/QwikDev/qwik/pull/9494))
+
+- Updated dependencies [[`ffa2938`](https://github.com/QwikDev/qwik/commit/ffa293805f122b229d657be45f65013e78ed25a2)]:
+  - @qwik.dev/optimizer@2.1.0-rc.12
+
 ## 2.0.0-rc.5
 
 ### Minor Changes
