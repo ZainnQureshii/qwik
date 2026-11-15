@@ -1192,7 +1192,12 @@ class SSRContainer extends _SharedContainer implements ISSRContainer, Serializat
     this.emitVNodeData();
     this.emitDelayedOutOfOrderSegmentVNodeData();
     if (!isDev) {
-      preloaderPost(this, this.renderOptions, this.$serverData$?.nonce);
+      preloaderPost(
+        this,
+        this.renderOptions,
+        this.$serverData$?.nonce,
+        this.preloadedHandlerBundles
+      );
     }
     this.emitSyncFnsData();
     this.emitPatchDataIfNeeded();

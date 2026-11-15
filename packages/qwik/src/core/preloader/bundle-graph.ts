@@ -1,8 +1,8 @@
 import { createMacroTask } from '../shared/platform/next-tick';
-import { config, isBrowser, isJSRegex, yieldInterval } from './constants';
+import { config, doc, isBrowser, isJSRegex, yieldInterval } from './constants';
 import { bundles, nextTriggerMacroTask, replayBundle } from './queue';
 import type { BundleGraph, ImportProbability } from './types';
-import { BundleImportState_Alias, BundleImportState_None } from './types';
+import { BundleImportState_Alias, BundleImportState_Loaded, BundleImportState_None } from './types';
 
 // Note, making these singletons pulls in too much code and they are ok being module-scoped
 export let base: string | undefined;
@@ -62,6 +62,19 @@ export const getBundle = (name: string) => {
   return bundle;
 };
 
+/** SSR modulepreloads the bundles a page needs at once; requesting them again wastes a slot. */
+const markSsrModulePreloads = (basePath: string) => {
+  const prefix = new URL(basePath, doc.baseURI).href;
+  const links = doc.querySelectorAll<HTMLLinkElement>('link[rel=modulepreload]');
+  for (let i = 0; i < links.length; i++) {
+    const href = links[i].href;
+    const bundle = href.startsWith(prefix) && getBundle(href.slice(prefix.length));
+    if (bundle && bundle.$state$ === BundleImportState_None) {
+      bundle.$state$ = BundleImportState_Loaded;
+    }
+  }
+};
+
 /** Used in browser */
 export const loadBundleGraph = (
   basePath: string,
@@ -80,6 +93,7 @@ export const loadBundleGraph = (
     return;
   }
   base = basePath;
+  markSsrModulePreloads(basePath);
 
   if (serializedResponse) {
     isWaitingForGraph = true;

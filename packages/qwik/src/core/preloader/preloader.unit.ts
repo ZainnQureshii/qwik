@@ -28,52 +28,78 @@ afterAll(async () => {
   }
 });
 
-test('runs independently of core and replays buffered hints', async () => {
+const runPreloader = async (document: Document, qPreloadQueue: unknown[][]) => {
   const { code } = await transform(preloaderCode, { format: 'cjs' });
+  const module = { exports: {} as typeof import('./index') };
+  const context = {
+    module,
+    __qwik__: undefined,
+    document,
+    URL,
+    setTimeout,
+    performance: { now: () => 0 },
+    qPreloadQueue: qPreloadQueue as unknown[][] | undefined,
+    qPreload: undefined as undefined | typeof module.exports.p,
+    require: (id: string) => {
+      expect(id).toBe('@qwik.dev/core/build');
+      return { isServer: false };
+    },
+  };
+  runInNewContext(code, context);
+  return { context, module };
+};
+
+const linkPaths = (document: Document) =>
+  Array.from(document.head.querySelectorAll('link'), (link) => new URL(link.href).pathname);
+
+const graphResponse = (graph: (string | number)[]) =>
+  Promise.resolve(new Response(JSON.stringify(graph)));
+
+test('runs independently of core and replays buffered hints', async () => {
   try {
     vi.useFakeTimers();
     const document = createDocument();
-    const module = { exports: {} as typeof import('./index') };
-    const context = {
-      module,
-      __qwik__: undefined,
-      document,
-      URL,
-      setTimeout,
-      performance: { now: () => 0 },
-      qPreloadQueue: [['route/', 1]],
-      qPreload: undefined as undefined | typeof module.exports.p,
-      require: (id: string) => {
-        expect(id).toBe('@qwik.dev/core/build');
-        return { isServer: false };
-      },
-    };
-    runInNewContext(code, context);
+    const { context, module } = await runPreloader(document, [['route/', 1]]);
     expect(context.__qwik__).toBeUndefined();
     expect(context.qPreload).toBe(module.exports.p);
     expect(typeof module.exports.g).toBe('function');
     expect(context.qPreloadQueue).toBeUndefined();
     module.exports.l(
       '/build/',
-      Promise.resolve(
-        new Response(
-          JSON.stringify(['route/', 2, 'route.js', 4, 'component.js', 6, 'static.js', 'event.js'])
-        )
-      ),
+      graphResponse(['route/', 2, 'route.js', 4, 'component.js', 6, 'static.js', 'event.js']),
       { P: 1 }
     );
     await vi.runAllTimersAsync();
-    const paths = () =>
-      Array.from(document.head.querySelectorAll('link'), (link) => new URL(link.href).pathname);
-    expect(paths()).toEqual(['/build/route.js', '/build/component.js', '/build/static.js']);
+    expect(linkPaths(document)).toEqual([
+      '/build/route.js',
+      '/build/component.js',
+      '/build/static.js',
+    ]);
     context.qPreload!('event.js', 1);
     await vi.runAllTimersAsync();
-    expect(paths()).toEqual([
+    expect(linkPaths(document)).toEqual([
       '/build/route.js',
       '/build/component.js',
       '/build/static.js',
       '/build/event.js',
     ]);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('does not preload again what SSR already modulepreloads, but does preload its imports', async () => {
+  try {
+    vi.useFakeTimers();
+    const document = createDocument();
+    const ssrLink = document.createElement('link');
+    ssrLink.rel = 'modulepreload';
+    ssrLink.href = new URL('/build/handler.js', document.baseURI).href;
+    document.head.appendChild(ssrLink);
+    const { module } = await runPreloader(document, [['handler.js', 1]]);
+    module.exports.l('/build/', graphResponse(['handler.js', 2, 'lazy.js']));
+    await vi.runAllTimersAsync();
+    expect(linkPaths(document)).toEqual(['/build/handler.js', '/build/lazy.js']);
   } finally {
     vi.useRealTimers();
   }

@@ -106,7 +106,8 @@ export const includePreloader = (
   container: SSRContainer,
   options: PreloaderOptions | boolean | undefined,
   referencedBundles: string[],
-  nonce?: string
+  nonce?: string,
+  modulePreloadedBundles?: ReadonlySet<string>
 ) => {
   if (referencedBundles.length === 0 || options === false) {
     return null;
@@ -126,8 +127,8 @@ export const includePreloader = (
     const preloaderBundle = resolvedManifest?.manifest.preloader;
     for (let i = 0; i < referencedBundles.length; i++) {
       const href = referencedBundles[i];
-      // we already preload the preloader bundle
-      if (href === preloaderBundle) {
+      // The preloader bundle and SSR's modulepreload links are already on the page
+      if (href === preloaderBundle || modulePreloadedBundles?.has(href)) {
         continue;
       }
       links.push(href);
@@ -173,14 +174,19 @@ export const includePreloader = (
   return null;
 };
 
-export const preloaderPost = (ssrContainer: SSRContainer, opts: RenderOptions, nonce?: string) => {
+export const preloaderPost = (
+  ssrContainer: SSRContainer,
+  opts: RenderOptions,
+  nonce?: string,
+  modulePreloadedBundles?: ReadonlySet<string>
+) => {
   if (import.meta.env?.DEV && !qTest) {
     return;
   }
   if (opts.preloader !== false) {
     const qrls = Array.from(ssrContainer.serializationCtx.$eventQrls$) as QRLInternal[];
     const preloadBundles = getBundles(qrls);
-    includePreloader(ssrContainer, opts.preloader, preloadBundles, nonce);
+    includePreloader(ssrContainer, opts.preloader, preloadBundles, nonce, modulePreloadedBundles);
   }
 };
 

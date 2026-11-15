@@ -203,6 +203,19 @@ describe('preloader', () => {
     expect(immediateScript).toContain('route-2.js');
     expect(immediateScript).not.toContain('route-3.js');
   });
+
+  it('spends ssrPreloads only on bundles SSR has not modulepreloaded yet', async () => {
+    const { container, getScriptContent } = createContainer();
+    const { includePreloader } = await import('./preload-impl');
+    const bundles = ['handler.js', 'route-1.js', 'route-2.js', 'route-3.js'];
+
+    includePreloader(container, { ssrPreloads: 2 }, bundles, undefined, new Set(['handler.js']));
+
+    const immediateScript = getScriptContent().split(`window.addEventListener('load'`)[0];
+    expect(immediateScript).not.toContain('handler.js');
+    expect(immediateScript).toContain('route-2.js');
+    expect(immediateScript).not.toContain('route-3.js');
+  });
 });
 
 describe('getStaticImports', () => {
