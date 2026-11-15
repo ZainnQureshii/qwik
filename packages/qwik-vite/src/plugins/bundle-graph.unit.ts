@@ -121,6 +121,26 @@ describe('convertManifestToBundleGraph', () => {
     expect(probabilityOf(50_000)).toBe(-8);
   });
 
+  test("core's own segments are not likely just because they come from core's file", () => {
+    const segmentProbability = (origin: string) =>
+      convertManifestToBundleGraph({
+        bundles: {
+          'lib.js': {
+            size,
+            total,
+            origins: [origin],
+            dynamicImports: ['seg.js'],
+            qrlImports: ['seg.js'],
+          },
+          'seg.js': { size, total, origins: [`${origin}_Show_component_x.js`] },
+        } as Record<string, QwikBundle>,
+        mapping: {},
+      } as QwikManifest)[1];
+
+    expect(segmentProbability('src/components/panel.tsx')).toBe(-9);
+    expect(segmentProbability('node_modules/@qwik.dev/core/dist/core.min.qwik.mjs')).toBe(-7);
+  });
+
   test('core is preloaded like any bundle its segments import', () => {
     const manifest = {
       core: 'core.js',

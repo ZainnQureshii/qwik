@@ -34,6 +34,9 @@ const getSymbolHash = (symbolName: string) => {
  * This format allows any string to denote a set of dependencies, which is useful for symbols and
  * SPA paths.
  */
+const isCoreBundle = (bundle: QwikBundle) =>
+  !!bundle.origins?.some((origin) => /[/\\]core(\.prod|\.min)?\.qwik\.mjs$/.test(origin));
+
 export function convertManifestToBundleGraph(
   manifest: QwikManifest,
   bundleGraphAdders?: Set<BundleGraphAdder>
@@ -128,8 +131,9 @@ export function convertManifestToBundleGraph(
       // Add a 8% chance for each interactivity point (max 40%)
       probability += (dep.interactivity || 0) * 0.08;
 
-      // If the dependency has a segment from the same parent, it's more likely to be loaded
-      if (bundle.origins && dep.origins) {
+      // If the dependency has a segment from the same parent, it's more likely to be loaded.
+      // Not for core: every bundle imports it, but its segments only run where the app uses them.
+      if (bundle.origins && dep.origins && !isCoreBundle(bundle)) {
         for (const origin of bundle.origins) {
           if (dep.origins.some((o) => o.startsWith(origin))) {
             // Add a 25% chance
